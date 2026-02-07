@@ -13,6 +13,7 @@
     - name: Generate private key for ACME account
       community.crypto.openssl_privatekey:
         path: "{{ acme_account_key_path }}"
+        mode: '0600'
         type: "{{ acme_account_key_type }}"
         size: "{{ acme_account_rsa_key_size if acme_account_key_type == 'RSA' else omit }}"
         curve: "{{ acme_account_ecc_curve if acme_account_key_type == 'ECC' else omit }}"
@@ -38,6 +39,7 @@
         account_key_src: "{{ acme_account_key_path }}"
         acme_version: "{{ acme_version }}"
       register: acme_account_info
+      when: debug_mode | bool
 
     - name: Debug ACME Account Info
       ansible.builtin.debug:
@@ -60,6 +62,7 @@
             else 'None' }}
           - "Total domains: {{ all_domains | length }}"
           - "Certificate directory: {{ cert_dir_name }}"
+      when: debug_mode | bool
 
     - name: Create certificate directory
       ansible.builtin.file:
@@ -111,6 +114,7 @@
           {{ cert_info.not_after[8:10] }}:{{ cert_info.not_after[10:12] }}
           UTC. Skipping renewal.
           {% endif %}
+      when: debug_mode | bool
 
     - name: Check for existing passphrase file
       ansible.builtin.stat:
