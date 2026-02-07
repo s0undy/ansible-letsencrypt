@@ -1,0 +1,50 @@
+# ==============================================================================
+# Do not store sensitive credentials (like API tokens) in this file.
+# Use vars/vault.yaml instead and encrypt it with Ansible Vault for security.
+# ==============================================================================
+
+# --- ACME Configuration ---
+# ACME protocol version (2 = ACMEv2, v1 is deprecated, keep this for future v3 if it comes out)
+acme_version: 2
+
+# Challenge type for domain validation [dns-01]
+acme_challenge_type: dns-01
+
+
+# --- Environment Selection (Staging vs Production) ---
+# STAGING (for testing - use untill you are 100% sure everything works as expected)
+acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+acme_account_key_path: account/staging-jit-account.key
+
+# PRODUCTION (Has rate limits, test with staging first!)
+# acme_directory: https://acme-v02.api.letsencrypt.org/directory
+# acme_account_key_path: account/prod-jit-account.key
+
+
+# --- CERTIFICATE CONFIGURATION ---
+# Primary domain: MUST be the root/base domain (e.g., "example.com")
+# This is used as the Common Name (CN) and for certificate directory naming
+domain_name: "example.com"
+
+# Subject Alternative Names (SANs): Additional domains to include in certificate
+# Include wildcards, subdomains, or related domains here
+# Examples:
+#   Wildcard + root:     ["*.example.com"]
+#   Specific subdomains: ["www.example.com", "api.example.com", "mail.example.com"]
+#   Combined:            ["*.example.com", "www.example.com", "api.example.com"]
+san_domains: ["*.example.com"]
+
+# Organization name for certificate (appears in certificate details)
+organization_name: Example Inc.
+
+# Base directory for storing certificates (absolute or relative to playbook)
+certs_base_dir: "{{ playbook_dir }}/certs"
+# Name of the certificate (used in directory structure)
+certs_name: wildcard
+# RSA key size for both ACME account key and certificate private key
+# Options: 2048, 4096, 8192
+key_size: 4096
+
+# Debug mode: Show detailed ACME challenge information
+# Set to false for normal operation, true for troubleshooting/testing
+debug_mode: true

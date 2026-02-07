@@ -2,7 +2,7 @@
 vars/vault.yaml
 
 # Variables with secrets (until migrated to vault)
-vars/letsencrypt_vars.yaml
+vars/vars.yaml
 
 # Certificate files
 account/*.key
