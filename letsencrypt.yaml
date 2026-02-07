@@ -7,14 +7,15 @@
   gather_facts: true
   become: false
   vars_files:
-    - vars/letsencrypt_vars.yaml
+    - vars/vars.yaml
     - vars/vault.yaml
   tasks:
     - name: Generate private key for ACME account
       community.crypto.openssl_privatekey:
         path: "{{ acme_account_key_path }}"
-        size: "{{ key_size }}"
-        type: RSA
+        type: "{{ acme_account_key_type }}"
+        size: "{{ acme_account_rsa_key_size if acme_account_key_type == 'RSA' else omit }}"
+        curve: "{{ acme_account_ecc_curve if acme_account_key_type == 'ECC' else omit }}"
 
     - name: Enforce account key permissions (0600)
       ansible.builtin.file:
@@ -177,8 +178,9 @@
     - name: Generate private key to be used with the certificate
       community.crypto.openssl_privatekey:
         path: "{{ certs_base_dir }}/{{ cert_dir_name }}/privatekey.pem"
-        type: RSA
-        size: 4096
+        type: "{{ private_key_type }}"
+        size: "{{ cert_rsa_key_size if private_key_type == 'RSA' else omit }}"
+        curve: "{{ cert_ecc_curve if private_key_type == 'ECC' else omit }}"
         cipher: auto
         passphrase: "{{ passphrase }}"
       when: cert_needs_renewal | bool
@@ -190,13 +192,7 @@
           {{ certs_base_dir }}/{{ cert_dir_name }}/privatekey.pem
         privatekey_passphrase: "{{ passphrase }}"
         common_name: "{{ domain_name }}"
-        subject_alt_name: >-
-          {{ all_domains
-          | map('regex_replace', '^(.*)$', 'DNS:\\1')
-          | list }}
-        country_name: SE
-        organization_name: "{{ organization_name }}"
-        email_address: "{{ acme_account_email }}"
+        subject_alt_name: "{{ all_domains | map('regex_replace', '^', 'DNS:') | list }}"
       when: cert_needs_renewal | bool
 
     - name: Submit CSR to ACME CA
